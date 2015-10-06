@@ -1,0 +1,41 @@
+version: "1.7.2"
+
+es_heap_size: "{{ (ansible_memtotal_mb * 0.5) | int }}"
+max_locked_memory: 'unlimited'
+
+template_conf: []
+log2papertrail: 'false'
+
+### elasticsearch.yml ###
+cluster:
+  name: 'elasticsearch'
+
+node:
+  master: 'true'
+  data: 'true'
+
+index:
+  shards: '4'
+  replicas: '1'
+
+path:
+  conf: '/etc/elasticsearch'
+  data: '/var/lib/elasticsearch/data'
+  logs: '/var/log/elasticsearch'
+  plugins: '/usr/share/elasticsearch/plugins'
+
+discovery:
+  zen:
+    minimum_master_nodes: '1'
+
+### elasticsearch-cloud-aws ###
+cloud:
+  aws:
+    region: "ap-northeast"
+  node:
+    auto_attributes: 'true'
+
+repositories:
+  s3:
+    bucket: ""
+    region: "ap-northeast"

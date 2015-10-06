@@ -1,0 +1,67 @@
+{
+    "template": "nginx-*",
+    "mappings": {
+        "_default_": {
+            "_all" : {"enabled" : false},
+            "_source": {"compress": true},
+            "properties": {
+                "remote_addr": {
+                    "index": "not_analyzed",
+                    "type": "string",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "domain": {
+                    "index": "not_analyzed",
+                    "type": "string",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "method": {
+                    "index": "not_analyzed",
+                    "type": "string",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "time": {
+                    "type": "long",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "response_time": {
+                    "type": "double",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "upstream_response_time": {
+                    "type": "double",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "body_size": {
+                    "type": "long",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "user_agent": {
+                    "type": "string",
+                    "fields": {
+                        "row": {
+                            "index": "not_analyzed",
+                            "type": "string",
+                            "fielddata": {"format": "doc_values"}
+                        }
+                    }
+                },
+                "customer_id": {
+                    "index": "not_analyzed",
+                    "type": "string",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "host": {
+                    "index": "not_analyzed",
+                    "type": "string",
+                    "fielddata": {"format": "doc_values"}
+                },
+                "remote_user": {"index": "no", "type": "string"},
+                "token": {"index": "no", "type": "string"},
+                "referer": {"index": "no", "type": "string"},
+                "set_cookie": {"index": "no", "type": "string"},
+                "receive_cookie": {"index": "no", "type": "string"}
+            }
+        }
+    }
+}

@@ -1,0 +1,62 @@
+- name: modify repository
+  apt_repository:
+    repo: "deb http://packages.elastic.co/elasticsearch/{{ version[:3] }}/debian stable main"
+    state: present
+
+- name: install elasticsearch
+  apt:
+    name: "elasticsearch={{ version }}*"
+    state: present
+    force: yes
+
+- name: modify sysconfig
+  template:
+    src: sysconfig
+    dest: /etc/default/elasticsearch
+    owner: root
+    group: root
+    mode: 0644
+
+- name: modify elasticsearch.yml
+  template:
+    src: elasticsearch.yml
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: root
+    mode: 0644
+
+- name: modify logging.yml (papertrail)
+  template:
+    src: logging_papertrail.yml
+    dest: /etc/elasticsearch/logging.yml
+    owner: root
+    group: root
+    mode: 0644
+  when: log2papertrail == 'true'
+
+- name: modify template directory
+  file:
+    path: /etc/elasticsearch/templates
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: modify index templates
+  template:
+    src: "{{ item }}"
+    dest: "/etc/elasticsearch/templates/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ template_conf }}"
+
+- include: plugin_cloud_aws.yml
+- include: plugin_analysis_icu.yml
+- include: plugin_others.yml
+
+- name: elasticsearch is enabled
+  service:
+    name: elasticsearch
+    enabled: yes
+
