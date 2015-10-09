@@ -1,5 +1,13 @@
 version: "1.7.2"
 
+plugins:
+  - { user: "lmenezes", component: "elasticsearch-kopf" }
+  - { user: "mobz", component: "elasticsearch-head" }
+  - { user: "royrusso", component: "elasticsearch-HQ" }
+  - { user: "lukas-vlcek", component: "bigdesk" }
+  - { user: "elasticsearch", component: "elasticsearch-cloud-aws", version: "2.7.1" }
+  - { user: "elasticsearch", component: "elasticsearch-analysis-icu", version: "2.7.0" }
+
 es_heap_size: "{{ (ansible_memtotal_mb * 0.5) | int }}"
 max_locked_memory: 'unlimited'
 

@@ -1,6 +1,6 @@
 - name: modify repository
   apt_repository:
-    repo: "deb http://packages.elastic.co/elasticsearch/{{ version[:3] }}/debian stable main"
+    repo: "deb http://packages.elastic.co/elasticsearch/{{ '.'.join(version.split('.')[0:2]) }}/debian stable main"
     state: present
 
 - name: install elasticsearch
@@ -8,6 +8,12 @@
     name: "elasticsearch={{ version }}*"
     state: present
     force: yes
+
+- name: install plugins
+  shell: "/usr/share/elasticsearch/bin/plugin -install {{ item.user }}/{{ item.component }}/{{ item.version | default('') }}"
+  args:
+    creates: "/usr/share/elasticsearch/plugins/{{ item.component.split('elasticsearch-')[-1] }}"
+  with_items: plugins
 
 - name: modify sysconfig
   template:
@@ -50,10 +56,6 @@
     group: root
     mode: 0644
   with_items: "{{ template_conf }}"
-
-- include: plugin_cloud_aws.yml
-- include: plugin_analysis_icu.yml
-- include: plugin_others.yml
 
 - name: elasticsearch is enabled
   service:
