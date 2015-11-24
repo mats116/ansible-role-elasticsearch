@@ -27,10 +27,11 @@ index:
   replicas: '1'
 
 path:
-  conf: '/etc/elasticsearch'
-  data: '/var/lib/elasticsearch/data'
-  logs: '/var/log/elasticsearch'
-  plugins: '/usr/share/elasticsearch/plugins'
+  conf: "/etc/elasticsearch"
+  data: "/var/lib/elasticsearch/data"
+  work: "/tmp/elasticsearch"
+  logs: "/var/log/elasticsearch"
+  plugins: "/usr/share/elasticsearch/plugins"
 
 discovery:
   zen:
