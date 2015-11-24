@@ -1,175 +1,120 @@
-cluster:
-  name: {{ cluster.name }}
-  routing:
-    allocation:
-      awareness:
-        attributes: aws_availability_zone
+################################### Cluster ###################################
 
-node:
-  name: ${HOSTNAME}
-  master: {{ node.master }}
-  data: {{ node.data }}
-  # max_local_storage_nodes: 1
-
-index:
-  number_of_shards: {{ index.shards }}
-  number_of_replicas: {{ index.replicas }}
-  store:
-    throttle:
-      type: none
-  refresh_interval: 30s
-  merge:
-    policy:
-      expunge_deletes_allowed: 10
-      floor_segment: 2mb
-      max_merge_at_once: 10
-      max_merge_at_once_explicit: 30
-      max_merged_segment: 1gb
-      segments_per_tier: 10
-      reclaim_deletes_weight: 2.0
-  compound_format: false
-  translog:
-    flush_threshold_size: 1gb
-    flush_threshold_period: 10m
-    interval: 5s
-  gateway:
-    local:
-      sync: 5s
-
-path:
-  conf: {{ path.conf }}
-  data: {{ path.data }}
-  logs: {{ path.logs }}
-  plugins: {{ path.plugins }}
-
-plugin:
-  # mandatory: elasticsearch-cloud-aws
-
-bootstrap:
-  mlockall: true
-
-network:
-  # bind_host: 192.168.0.1
-  # publish_host: 192.168.0.1
-  # host: 192.168.0.1
-
-transport:
-  tcp:
-    # port: 9300
-    # compress: false
-http:
-  # port: 9200
-  # max_content_length: 100mb
-  # enabled: false
-
-gateway:
-  # type: local
-  # recover_after_nodes: 1
-  # recover_after_time: 5m
-  # expected_nodes: 2
-
-cluster:
-  routing:
-    allocation:
-      cluster_concurrent_rebalance: 4
-      node_concurrent_recoveries: 4
-      # node_initial_primaries_recoveries: 4
-
-indices:
-  memory:
-    index_buffer_size: 512mb
-  recovery:
-    max_bytes_per_sec: 500mb
-    concurrent_streams: 10
-  cache:
-    filter:
-      size: 10%
-  fielddata:
-    cache:
-      # size: (Defaults to unbounded)
-      expire: -1
-  breaker:
-    fielddata:
-      limit: 60%
-      overhead: 1.03
-  store:
-    throttle:
-      max_bytes_per_sec: 200mb
-
-discovery:
-  zen:
-    minimum_master_nodes: {{ discovery.zen.minimum_master_nodes }}
-    ping:
-      # timeout: 3s
-      multicast:
-        enabled: false
-      unicast:
-        # hosts: [ "host1", "host2", "host3" ]
-    fd:
-      ping_interval: 1s
-      ping_timeout: 30s
-      ping_retries: 6
-
-index:
-  search:
-    slowlog:
-      threshold:
-        query:
-          warn: 10s
-          info: 5s
-          # debug: 3s
-          # trace: 1s
-        fetch:
-          warn: 1s
-          info: 800ms
-          # debug: 500ms
-          # trace: 200ms
-        index:
-          warn: 10s
-          info: 5s
-          # debug: 2s
-          # trace: 500ms
-
-monitor:
-  jvm:
-    gc:
-      young:
-        warn: 1000ms
-        info: 700ms
-        # debug: 400ms
-      old:
-        warn: 10s
-        info: 5s
-        # debug: 2s
-
-http:
-  jsonp:
-    enable: false
-
-script:
-  disable_dynamic: false
+cluster.name: {{ cluster.name }}
 
 
-### elasticsearch-cloud-aws ###
-discovery:
-  type: ec2
-  ec2:
-    ping_timeout: 60s
-    tag:
-      cluster: {{ cluster.name }}
+#################################### Node #####################################
 
-cloud:
-  aws:
-    region: {{ cloud.aws.region }}
-    protocol: https
-    s3:
-      protocol: http
-    ec2:
-      protocol: https
-  node:
-    auto_attributes: {{ cloud.node.auto_attributes }}
+node.name: ${HOSTNAME}
 
-repositories:
-  s3:
-    bucket: {{ repositories.s3.bucket }}
-    region: {{ repositories.s3.region }}
+node.master: {{ node.master }}
+node.data: {{ node.data }}
+
+#node.rack: rack314
+#node.max_local_storage_nodes: 1
+
+
+#################################### Index ####################################
+
+index.number_of_shards: {{ index.shards }}
+index.number_of_replicas: {{ index.replicas }}
+
+
+#################################### Paths ####################################
+
+path.conf: {{ path.conf }}
+path.data: {{ path.data }}
+path.work: {{ path.work }}
+path.logs: {{ path.logs }}
+path.plugins: {{ path.plugins }}
+
+
+#################################### Plugin ###################################
+
+#plugin.mandatory: mapper-attachments,lang-groovy
+
+
+################################### Memory ####################################
+
+bootstrap.mlockall: true
+
+
+############################## Network And HTTP ###############################
+
+#network.bind_host: 192.168.0.1
+#network.publish_host: 192.168.0.1
+#network.host: 192.168.0.1
+#transport.tcp.port: 9300
+#transport.tcp.compress: true
+#http.port: 9200
+#http.max_content_length: 100mb
+#http.enabled: false
+
+
+################################### Gateway ###################################
+
+#gateway.type: local
+#gateway.recover_after_nodes: 1
+#gateway.recover_after_time: 5m
+#gateway.expected_nodes: 2
+
+
+############################# Recovery Throttling #############################
+
+cluster.routing.allocation.node_initial_primaries_recoveries: 4
+cluster.routing.allocation.node_concurrent_recoveries: 4
+
+indices.recovery.max_bytes_per_sec: 500mb
+indices.recovery.concurrent_streams: 10
+
+
+################################## Discovery ##################################
+
+discovery.zen.minimum_master_nodes: {{ discovery.zen.minimum_master_nodes }}
+#discovery.zen.ping.timeout: 3s
+discovery.zen.ping.multicast.enabled: false
+#discovery.zen.ping.unicast.hosts: ["host1", "host2:port"]
+
+# EC2 discovery allows to use AWS EC2 API in order to perform discovery.
+#
+# You have to install the cloud-aws plugin for enabling the EC2 discovery.
+#
+# For more information, see
+# <http://elasticsearch.org/guide/en/elasticsearch/reference/current/modules-discovery-ec2.html>
+#
+# See <http://elasticsearch.org/tutorials/elasticsearch-on-ec2/>
+# for a step-by-step tutorial.
+
+
+################################## Slow Log ##################################
+
+# Shard level query and fetch threshold logging.
+
+index.search.slowlog.threshold.query.warn: 10s
+#index.search.slowlog.threshold.query.info: 5s
+#index.search.slowlog.threshold.query.debug: 2s
+#index.search.slowlog.threshold.query.trace: 500ms
+
+index.search.slowlog.threshold.fetch.warn: 1s
+#index.search.slowlog.threshold.fetch.info: 800ms
+#index.search.slowlog.threshold.fetch.debug: 500ms
+#index.search.slowlog.threshold.fetch.trace: 200ms
+
+index.indexing.slowlog.threshold.index.warn: 10s
+#index.indexing.slowlog.threshold.index.info: 5s
+#index.indexing.slowlog.threshold.index.debug: 2s
+#index.indexing.slowlog.threshold.index.trace: 500ms
+
+################################## GC Logging ################################
+
+monitor.jvm.gc.young.warn: 1000ms
+#monitor.jvm.gc.young.info: 700ms
+#monitor.jvm.gc.young.debug: 400ms
+
+monitor.jvm.gc.old.warn: 10s
+#monitor.jvm.gc.old.info: 5s
+#monitor.jvm.gc.old.debug: 2s
+
+################################## Security ################################
+
+http.jsonp.enable: false
