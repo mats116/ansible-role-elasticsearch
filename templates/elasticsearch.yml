@@ -1,175 +1,124 @@
-cluster:
-  name: {{ cluster.name }}
-  routing:
-    allocation:
-      awareness:
-        attributes: aws_availability_zone
-
-node:
-  name: ${HOSTNAME}
-  master: {{ node.master }}
-  data: {{ node.data }}
-  # max_local_storage_nodes: 1
-
-index:
-  number_of_shards: {{ index.shards }}
-  number_of_replicas: {{ index.replicas }}
-  store:
-    throttle:
-      type: none
-  refresh_interval: 30s
-  merge:
-    policy:
-      expunge_deletes_allowed: 10
-      floor_segment: 2mb
-      max_merge_at_once: 10
-      max_merge_at_once_explicit: 30
-      max_merged_segment: 1gb
-      segments_per_tier: 10
-      reclaim_deletes_weight: 2.0
-  compound_format: false
-  translog:
-    flush_threshold_size: 1gb
-    flush_threshold_period: 10m
-    interval: 5s
-  gateway:
-    local:
-      sync: 5s
-
-path:
-  conf: {{ path.conf }}
-  data: {{ path.data }}
-  logs: {{ path.logs }}
-  plugins: {{ path.plugins }}
-
-plugin:
-  # mandatory: elasticsearch-cloud-aws
-
-bootstrap:
-  mlockall: true
-
-network:
-  # bind_host: 192.168.0.1
-  # publish_host: 192.168.0.1
-  # host: 192.168.0.1
-
-transport:
-  tcp:
-    # port: 9300
-    # compress: false
-http:
-  # port: 9200
-  # max_content_length: 100mb
-  # enabled: false
-
-gateway:
-  # type: local
-  # recover_after_nodes: 1
-  # recover_after_time: 5m
-  # expected_nodes: 2
-
-cluster:
-  routing:
-    allocation:
-      cluster_concurrent_rebalance: 4
-      node_concurrent_recoveries: 4
-      # node_initial_primaries_recoveries: 4
-
-indices:
-  memory:
-    index_buffer_size: 512mb
-  recovery:
-    max_bytes_per_sec: 500mb
-    concurrent_streams: 10
-  cache:
-    filter:
-      size: 10%
-  fielddata:
-    cache:
-      # size: (Defaults to unbounded)
-      expire: -1
-  breaker:
-    fielddata:
-      limit: 60%
-      overhead: 1.03
-  store:
-    throttle:
-      max_bytes_per_sec: 200mb
-
-discovery:
-  zen:
-    minimum_master_nodes: {{ discovery.zen.minimum_master_nodes }}
-    ping:
-      # timeout: 3s
-      multicast:
-        enabled: false
-      unicast:
-        # hosts: [ "host1", "host2", "host3" ]
-    fd:
-      ping_interval: 1s
-      ping_timeout: 30s
-      ping_retries: 6
-
-index:
-  search:
-    slowlog:
-      threshold:
-        query:
-          warn: 10s
-          info: 5s
-          # debug: 3s
-          # trace: 1s
-        fetch:
-          warn: 1s
-          info: 800ms
-          # debug: 500ms
-          # trace: 200ms
-        index:
-          warn: 10s
-          info: 5s
-          # debug: 2s
-          # trace: 500ms
-
-monitor:
-  jvm:
-    gc:
-      young:
-        warn: 1000ms
-        info: 700ms
-        # debug: 400ms
-      old:
-        warn: 10s
-        info: 5s
-        # debug: 2s
-
-http:
-  jsonp:
-    enable: false
-
-script:
-  disable_dynamic: false
-
-
-### elasticsearch-cloud-aws ###
-discovery:
-  type: ec2
-  ec2:
-    ping_timeout: 60s
-    tag:
-      cluster: {{ cluster.name }}
-
-cloud:
-  aws:
-    region: {{ cloud.aws.region }}
-    protocol: https
-    s3:
-      protocol: http
-    ec2:
-      protocol: https
-  node:
-    auto_attributes: {{ cloud.node.auto_attributes }}
-
-repositories:
-  s3:
-    bucket: {{ repositories.s3.bucket }}
-    region: {{ repositories.s3.region }}
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+#
+# The primary way of configuring a node is via this file. This template lists
+# the most important settings you may want to configure for a production cluster.
+#
+# Please see the documentation for further information on configuration options:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration.html>
+#
+# ---------------------------------- Cluster -----------------------------------
+#
+# Use a descriptive name for your cluster:
+#
+cluster.name: {{ cluster.name }}
+#
+# ------------------------------------ Node ------------------------------------
+#
+# Use a descriptive name for the node:
+#
+node.name: ${HOSTNAME}
+node.master: {{ node.master }}
+node.data: {{ node.data }}
+#
+# Add custom attributes to the node:
+#
+# node.rack: r1
+#
+# ----------------------------------- Paths ------------------------------------
+#
+# Path to directory where to store the data (separate multiple locations by comma):
+#
+path.data: {{ path.data }}
+#
+# Path to log files:
+#
+path.logs: {{ path.logs }}
+#
+# ----------------------------------- Memory -----------------------------------
+#
+# Lock the memory on startup:
+#
+bootstrap.mlockall: true
+#
+# Make sure that the `ES_HEAP_SIZE` environment variable is set to about half the memory
+# available on the system and that the owner of the process is allowed to use this limit.
+#
+# Elasticsearch performs poorly when the system is swapping the memory.
+#
+# ---------------------------------- Network -----------------------------------
+#
+# Set the bind adress to a specific IP (IPv4 or IPv6):
+#
+network.host: _non_loopback_
+#
+# Set a custom port for HTTP:
+#
+http.port: 9200
+#
+# For more information, see the documentation at:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html>
+#
+# ---------------------------------- Gateway -----------------------------------
+#
+# Block initial recovery after a full cluster restart until N nodes are started:
+#
+# gateway.recover_after_nodes: 3
+#
+# For more information, see the documentation at:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-gateway.html>
+#
+# --------------------------------- Discovery ----------------------------------
+#
+# Elasticsearch nodes will find each other via unicast, by default.
+#
+# Pass an initial list of hosts to perform discovery when new node is started:
+# The default list of hosts is ["127.0.0.1", "[::1]"]
+#
+# discovery.zen.ping.unicast.hosts: ["host1", "host2"]
+#
+# Prevent the "split brain" by configuring the majority of nodes (total number of nodes / 2 + 1):
+#
+discovery.zen.minimum_master_nodes: {{ discovery.zen.minimum_master_nodes }}
+#
+# For more information, see the documentation at:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery.html>
+#
+# ---------------------------------- Various -----------------------------------
+#
+# Disable starting multiple nodes on a single system:
+#
+# node.max_local_storage_nodes: 1
+#
+# Require explicit names when deleting indices:
+#
+# action.destructive_requires_name: true
+#
+# ----------------------------------- Index ------------------------------------
+#
+index.number_of_shards: {{ index.shards }}
+index.number_of_replicas: {{ index.replicas }}
+index.refresh_interval: 30s
+index.merge.policy.expunge_deletes_allowed: 10
+index.merge.policy.floor_segment: 2mb
+index.merge.policy.max_merge_at_once: 10
+index.merge.policy.max_merge_at_once_explicit: 30
+index.merge.policy.max_merged_segment: 1gb
+index.merge.policy.segments_per_tier: 10
+index.merge.policy.reclaim_deletes_weight: 2.0
+index.compound_format: false
+index.translog.flush_threshold_size: 1gb
+index.translog.flush_threshold_period: 10m
+index.translog.interval: 5s
+#
+# --------------------------------- AWS Cloud ----------------------------------
+#
+cluster.routing.allocation.awareness.attributes: aws_availability_zone
+cloud.node.auto_attributes: {{ cloud.node.auto_attributes }}
+cloud.aws.region: {{ cloud.aws.region }}
+discovery.type: ec2
+discovery.ec2.tag.{{ discovery.ec2.tag.name }}: {{ cluster.name }}
+#

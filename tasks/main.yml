@@ -1,19 +1,23 @@
+- name: modify apt-key
+  apt_key: 
+    url: "https://packages.elastic.co/GPG-KEY-elasticsearch"
+
 - name: modify repository
   apt_repository:
-    repo: "deb http://packages.elastic.co/elasticsearch/{{ '.'.join(version.split('.')[0:2]) }}/debian stable main"
+    repo: "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main"
     state: present
 
 - name: install elasticsearch
   apt:
-    name: "elasticsearch={{ version }}*"
+    name: "elasticsearch={{ es_version }}*"
     state: present
     force: yes
 
 - name: install plugins
-  shell: "/usr/share/elasticsearch/bin/plugin -install {{ item.user }}/{{ item.component }}/{{ item.version | default('') }}"
+  shell: "/usr/share/elasticsearch/bin/plugin install {{ item.name }}/{{ item.version | default('') }}"
   args:
-    creates: "/usr/share/elasticsearch/plugins/{{ item.component.split('elasticsearch-')[-1] }}"
-  with_items: plugins
+    creates: "/usr/share/elasticsearch/plugins/{{ item.name.split('elasticsearch-')[-1] }}"
+  with_items: es_plugins
 
 - name: modify sysconfig
   template:
@@ -31,14 +35,13 @@
     group: root
     mode: 0644
 
-- name: modify logging.yml (papertrail)
+- name: modify logging.yml
   template:
-    src: logging_papertrail.yml
+    src: logging.yml
     dest: /etc/elasticsearch/logging.yml
     owner: root
     group: root
     mode: 0644
-  when: log2papertrail == 'true'
 
 - name: modify template directory
   file:
@@ -48,17 +51,7 @@
     group: root
     mode: 0755
 
-- name: modify index templates
-  template:
-    src: "{{ item }}"
-    dest: "/etc/elasticsearch/templates/{{ item }}"
-    owner: root
-    group: root
-    mode: 0644
-  with_items: "{{ template_conf }}"
-
 - name: elasticsearch is enabled
   service:
     name: elasticsearch
     enabled: yes
-
