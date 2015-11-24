@@ -1,50 +1,44 @@
-version: "1.7.2"
+es_version: "2.0.0"
 
-plugins:
-  - { user: "lmenezes", component: "elasticsearch-kopf" }
-  - { user: "mobz", component: "elasticsearch-head" }
-  - { user: "royrusso", component: "elasticsearch-HQ" }
-  - { user: "lukas-vlcek", component: "bigdesk" }
-  - { user: "elasticsearch", component: "elasticsearch-cloud-aws", version: "2.7.1" }
-  - { user: "elasticsearch", component: "elasticsearch-analysis-icu", version: "2.7.0" }
+es_plugins:
+  - { name: "cloud-aws" }
+  - { name: "analysis-icu" }
+  - { name: "lmenezes/elasticsearch-kopf", version: "2.x" }
+  - { name: "royrusso/elasticsearch-hq", version: "2.x" }
+  - { name: "mobz/elasticsearch-head" }
 
 es_heap_size: "{{ (ansible_memtotal_mb * 0.5) | int }}"
-max_locked_memory: 'unlimited'
+max_locked_memory: unlimited
 
-template_conf: []
-log2papertrail: 'false'
+# -------------------------------- logging.yml ---------------------------------
+es_syslog_facility: local7
 
-### elasticsearch.yml ###
+# ----------------------------- elasticsearch.yml ------------------------------
 cluster:
-  name: 'elasticsearch'
+  name: "elasticsearch"
 
 node:
-  master: 'true'
-  data: 'true'
+  master: "true"
+  data: "true"
 
 index:
-  shards: '4'
-  replicas: '1'
+  shards: 4
+  replicas: 1
 
 path:
-  conf: "/etc/elasticsearch"
   data: "/var/lib/elasticsearch/data"
-  work: "/tmp/elasticsearch"
   logs: "/var/log/elasticsearch"
-  plugins: "/usr/share/elasticsearch/plugins"
 
 discovery:
   zen:
-    minimum_master_nodes: '1'
+    minimum_master_nodes: 1
+  ec2:
+    tag:
+      name: "es_cluster"
 
-### elasticsearch-cloud-aws ###
+# --------------------------------- AWS Cloud ----------------------------------
 cloud:
   aws:
     region: "ap-northeast"
   node:
-    auto_attributes: 'true'
-
-repositories:
-  s3:
-    bucket: ""
-    region: "ap-northeast"
+    auto_attributes: "true"
